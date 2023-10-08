@@ -5,8 +5,9 @@ import filledHeartIcon from "@assets/icon/heart-filled.svg";
 import emptyHeartIcon from "@assets/icon/heart.svg";
 import defaultProductThumbnail from "@assets/images/default-thumbnail.png";
 import AppBar from "@components/AppBar";
-import DeleteAlert from "@components/DeleteAlert";
 import Button from "@components/common/Button/Button";
+import DangerAlert from "@components/common/DangerAlert/DangerAlert";
+import useDangerAlert from "@components/common/DangerAlert/useDangerAlert";
 import DraggableImageSlider from "@components/common/DraggableImageSlider/DraggableImageSlider";
 import { Dropdown, DropdownItem } from "@components/common/Dropdown";
 import { formatAsPrice } from "@utils/stringFormatters";
@@ -49,7 +50,8 @@ export default function ProductItemPage() {
     productItemDetails?.id ?? 0
   );
 
-  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
+  const { isDangerAlertOpen, openDangerAlert, closeDangerAlert } =
+    useDangerAlert();
 
   useEffect(() => {
     // 찜 관련 초기화
@@ -61,14 +63,6 @@ export default function ProductItemPage() {
 
   const goPrevPage = () => {
     navigate("/");
-  };
-
-  const openDeleteAlert = () => {
-    setIsDeleteAlertOpen(true);
-  };
-
-  const closeDeleteAlert = () => {
-    setIsDeleteAlertOpen(false);
   };
 
   const onToggleWishlisted = async () => {
@@ -94,7 +88,7 @@ export default function ProductItemPage() {
   const deleteProductItem = async (id: number): Promise<void> => {
     const res = await deleteProductMutationAsync(id);
     if (res.code === HTTPSTATUS.success) {
-      closeDeleteAlert();
+      closeDangerAlert();
     }
   };
 
@@ -119,11 +113,6 @@ export default function ProductItemPage() {
 
   return (
     <StyledProductItemPage ref={productItemPageRef}>
-      <DeleteAlert
-        isOpen={isDeleteAlertOpen}
-        onClose={closeDeleteAlert}
-        onDelete={() => deleteProductItem(Number(id))}
-      />
       <Wrapper>
         <AppBar padding="8px 0" height="56px" isTop={true} isTransparent={true}>
           <ButtonContainer onClick={goPrevPage}>
@@ -148,8 +137,8 @@ export default function ProductItemPage() {
                   }}>
                   게시글 수정
                 </DropdownItem>
-                <DropdownItem onClick={openDeleteAlert} variant="danger">
-                  <DeleteText>삭제</DeleteText>
+                <DropdownItem onClick={openDangerAlert} variant="danger">
+                  삭제
                 </DropdownItem>
               </Dropdown>
             )}
@@ -230,6 +219,14 @@ export default function ProductItemPage() {
           대화 중인 채팅방
         </Button>
       </AppBar>
+
+      <DangerAlert
+        title="등록한 상품을 정말로 삭제하시겠어요?"
+        confirmButtonText="삭제"
+        isOpen={isDangerAlertOpen}
+        onCancel={closeDangerAlert}
+        onConfirm={() => deleteProductItem(Number(id))}
+      />
     </StyledProductItemPage>
   );
 }
@@ -417,8 +414,4 @@ const TextInfoHeader = styled.div`
 
 const NumLikesText = styled.span`
   font: ${({ theme: { font } }) => font.displayDefault16};
-`;
-
-const DeleteText = styled.span`
-  color: ${({ theme: { color } }) => color.system.warning};
 `;

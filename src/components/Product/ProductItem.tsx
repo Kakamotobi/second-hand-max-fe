@@ -2,8 +2,9 @@ import dotsIcon from "@assets/icon/dots.svg";
 import heartIcon from "@assets/icon/heart.svg";
 import messageIcon from "@assets/icon/message.svg";
 import defaultProductThumbnail from "@assets/images/default-thumbnail.png";
-import DeleteAlert from "@components/DeleteAlert";
 import Button from "@components/common/Button";
+import DangerAlert from "@components/common/DangerAlert/DangerAlert";
+import useDangerAlert from "@components/common/DangerAlert/useDangerAlert";
 import { Dropdown, DropdownItem } from "@components/common/Dropdown";
 import { formatAsPrice, parseNeighborhood } from "@utils/stringFormatters";
 import { convertPastTimestamp } from "@utils/time";
@@ -12,7 +13,7 @@ import useProductItemDeleteMutation from "api/queries/useProductItemDeleteMutati
 import useProductItemStatusEditMutation from "api/queries/useProductItemStatusEditMutation";
 import useUserInfoQuery from "api/queries/useUserInfoQuery";
 import { HTTPSTATUS } from "api/types";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { styled } from "styled-components";
 
@@ -24,7 +25,8 @@ export default function ProductItem({ item }: Props) {
   const navigate = useNavigate();
   const productItemRef = useRef(null);
 
-  const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
+  const { isDangerAlertOpen, openDangerAlert, closeDangerAlert } =
+    useDangerAlert();
 
   const { data: userInfo } = useUserInfoQuery();
 
@@ -37,14 +39,6 @@ export default function ProductItem({ item }: Props) {
 
   const onClickProductItem = () => {
     navigate(`/product/${item.id}`);
-  };
-
-  const openDeleteAlert = () => {
-    setIsDeleteAlertOpen(true);
-  };
-
-  const closeDeleteAlert = () => {
-    setIsDeleteAlertOpen(false);
   };
 
   const isUserSeller = userInfo?.userId === item.sellerId;
@@ -65,24 +59,25 @@ export default function ProductItem({ item }: Props) {
     {
       variant: "danger",
       item: { id: 0, title: "삭제" },
-      // TODO: open confirmation modal
-      onClick: () => openDeleteAlert(),
+      onClick: () => openDangerAlert(),
     },
   ];
 
   const deleteProductItem = async (id: number): Promise<void> => {
     const res = await deleteProductMutationAsync(id);
     if (res.code === HTTPSTATUS.success) {
-      closeDeleteAlert();
+      closeDangerAlert();
     }
   };
 
   return (
     <StyledProductItem onClick={onClickProductItem} ref={productItemRef}>
-      <DeleteAlert
-        isOpen={isDeleteAlertOpen}
-        onClose={closeDeleteAlert}
-        onDelete={() => deleteProductItem(Number(item.id))}
+      <DangerAlert
+        title="등록한 상품을 정말로 삭제하시겠어요?"
+        confirmButtonText="삭제"
+        isOpen={isDangerAlertOpen}
+        onCancel={closeDangerAlert}
+        onConfirm={() => deleteProductItem(Number(item.id))}
       />
       <div>
         <ProductItemThumbnail

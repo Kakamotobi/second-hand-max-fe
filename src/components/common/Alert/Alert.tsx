@@ -20,17 +20,16 @@ export default function Alert({ children }: Props) {
 }
 
 const StyledAlert = styled.div`
-  display: flex;
-  flex-direction: column;
   width: 336px;
   height: 144px;
-  border-radius: 16px;
-  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
-  background-color: ${({ theme: { color } }) => color.neutral.background};
-
+  display: flex;
+  flex-direction: column;
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  background-color: ${({ theme: { color } }) => color.neutral.background};
+  border-radius: 16px;
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
   z-index: ${zAlert};
 `;
